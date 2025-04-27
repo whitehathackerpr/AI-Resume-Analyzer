@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a6bff;
+            --secondary-color: #6c5ce7;
+            --accent-color: #00cec9;
+            --success-color: #00b894;
+            --warning-color: #fdcb6e;
+            --danger-color: #ff7675;
+            --light-bg: #f8f9fa;
+            --dark-text: #2d3436;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--dark-text);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.5rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--primary-color);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(74, 107, 255, 0.05);
+            margin: 1rem 0;
+        }
+
+        .upload-area:hover {
+            background: rgba(74, 107, 255, 0.1);
+            border-color: var(--secondary-color);
+        }
+
+        .upload-area.dragover {
+            background: rgba(74, 107, 255, 0.15);
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 107, 255, 0.3);
+        }
+
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            background: rgba(74, 107, 255, 0.1);
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 5px;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            margin: 0.2rem;
+        }
+
+        .grammar-suggestion {
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            background: rgba(253, 203, 110, 0.1);
+            border-radius: 0 10px 10px 0;
+        }
+
+        .grammar-context {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+
+        .grammar-replacement {
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+
+        .status-message.info {
+            background: rgba(74, 107, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        .status-message.error {
+            background: rgba(255, 118, 117, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-message.success {
+            background: rgba(0, 184, 148, 0.1);
+            color: var(--success-color);
+        }
+
+        .customization-options {
+            background: var(--light-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .form-select {
+            border-radius: 10px;
+            padding: 0.8rem;
+            border: 2px solid rgba(74, 107, 255, 0.2);
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(74, 107, 255, 0.25);
+        }
+
+        .accordion-button {
+            background: var(--light-bg);
+            border-radius: 10px !important;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .pre-scrollable {
+            max-height: 400px;
+            border-radius: 10px;
+            padding: 1rem;
+            background: var(--light-bg);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            color: var(--dark-text);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .resume-preview {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .resume-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .resume-header h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .resume-header p {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .contact-info span {
+            color: var(--dark-text);
+        }
+
+        .resume-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(74, 107, 255, 0.2);
+        }
+
+        .section-content {
+            line-height: 1.6;
+        }
+
+        .section-content p {
+            margin-bottom: 0.5rem;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .skill-badge {
+            background: rgba(74, 107, 255, 0.1);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 id="loadingMessage">Analyzing your resume...</h4>
+            <div class="progress mt-3">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h1 class="text-center mb-0">AI Resume Analyzer</h1>
+                        <p class="text-center mb-0 mt-2">
+                            Upload your resume and job description to get personalized suggestions for improvement
+                        </p>
+                    </div>
+                    <div class="card-body">
+                        <div id="statusMessage" class="status-message" style="display: none;"></div>
+                        
+                        <form id="uploadForm">
+                            <div class="mb-4">
+                                <label for="resume" class="form-label h5">Upload Resume (PDF or DOCX)</label>
+                                <div class="upload-area" id="dropArea">
+                                    <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-primary"></i>
+                                    <p class="mb-0 h5">Drag and drop your resume here or click to browse</p>
+                                    <p class="text-muted mb-0">Maximum file size: 16MB</p>
+                                    <input type="file" class="d-none" id="resume" name="resume" accept=".pdf,.docx">
+                                </div>
+                                <div id="fileInfo" class="file-info"></div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="jobDescription" class="form-label h5">Job Description</label>
+                                <textarea class="form-control" id="jobDescription" name="job_description" rows="5" 
+                                    placeholder="Paste the job description here..." style="border-radius: 10px;"></textarea>
+                            </div>
+                            
+                            <div class="customization-options">
+                                <h5 class="mb-3">Customization Options</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="addMissingKeywords" name="add_missing_keywords" checked>
+                                            <label class="form-check-label" for="addMissingKeywords">
+                                                Add missing keywords
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="enhanceExperience" name="enhance_experience" checked>
+                                            <label class="form-check-label" for="enhanceExperience">
+                                                Enhance experience section
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="optimizeSummary" name="optimize_summary" checked>
+                                            <label class="form-check-label" for="optimizeSummary">
+                                                Optimize professional summary
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="atsOptimization" name="ats_optimization" checked>
+                                            <label class="form-check-label" for="atsOptimization">
+                                                ATS optimization
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="keywordDensity" class="form-label">Keyword Density</label>
+                                            <select class="form-select" id="keywordDensity" name="keyword_density">
+                                                <option value="low">Low</option>
+                                                <option value="medium" selected>Medium</option>
+                                                <option value="high">High</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="style" class="form-label">Writing Style</label>
+                                            <select class="form-select" id="style" name="style">
+                                                <option value="professional" selected>Professional</option>
+                                                <option value="technical">Technical</option>
+                                                <option value="creative">Creative</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="customization-options mt-4">
+                                <h5 class="mb-3">Resume Design</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="resumeTemplate" class="form-label">Template Style</label>
+                                            <select class="form-select" id="resumeTemplate" name="resume_template">
+                                                <option value="modern">Modern</option>
+                                                <option value="professional">Professional</option>
+                                                <option value="creative">Creative</option>
+                                                <option value="minimal">Minimal</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="primaryColor" class="form-label">Primary Color</label>
+                                            <input type="color" class="form-control form-control-color" id="primaryColor" name="primary_color" value="#4a6bff">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="secondaryColor" class="form-label">Secondary Color</label>
+                                            <input type="color" class="form-control form-control-color" id="secondaryColor" name="secondary_color" value="#6c5ce7">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="fontFamily" class="form-label">Font Family</label>
+                                            <select class="form-select" id="fontFamily" name="font_family">
+                                                <option value="Arial">Arial</option>
+                                                <option value="Calibri">Calibri</option>
+                                                <option value="Times New Roman">Times New Roman</option>
+                                                <option value="Helvetica">Helvetica</option>
+                                                <option value="Georgia">Georgia</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="fontSize" class="form-label">Font Size</label>
+                                            <input type="range" class="form-range" id="fontSize" min="10" max="14" value="12">
+                                            <small class="text-muted">Current size: <span id="fontSizeValue">12</span>pt</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="lineSpacing" class="form-label">Line Spacing</label>
+                                            <input type="range" class="form-range" id="lineSpacing" min="12" max="18" value="14">
+                                            <small class="text-muted">Current spacing: <span id="lineSpacingValue">14</span>pt</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="includePhoto" name="include_photo">
+                                            <label class="form-check-label" for="includePhoto">
+                                                Include photo space
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="includeSkillsChart" name="include_skills_chart" checked>
+                                            <label class="form-check-label" for="includeSkillsChart">
+                                                Include skills chart
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="includeSocialLinks" name="include_social_links" checked>
+                                            <label class="form-check-label" for="includeSocialLinks">
+                                                Include social media links
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="analyzeButton">
+                                    <i class="fas fa-magic me-2"></i>Analyze Resume
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="results" class="mt-4" style="display: none;">
+                    <div class="card shadow result-card mb-4">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h3 class="card-title mb-0">Analysis Results</h3>
+                                <div>
+                                    <button id="downloadReport" class="btn btn-outline-light me-2">
+                                        <i class="fas fa-download me-2"></i>Download Report
+                                    </button>
+                                    <button id="downloadEnhancedResume" class="btn btn-light">
+                                        <i class="fas fa-file-alt me-2"></i>Download Enhanced Resume
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress mb-3">
+                                <div id="matchPercentage" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <h4 id="matchText" class="text-center mb-4 text-gradient"></h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Keywords Found</h5>
+                                    <div id="keywords" class="mb-3"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Missing Keywords</h5>
+                                    <div id="missingKeywords" class="mb-3"></div>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">ATS Compatibility</h5>
+                            <div id="atsIssues" class="mb-4">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Analyzing ATS compatibility...
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Grammar Suggestions</h5>
+                            <div id="grammarSuggestions" class="mb-4"></div>
+                            
+                            <h5 class="mt-4">General Suggestions</h5>
+                            <div id="suggestions" class="mb-4"></div>
+                            
+                            <div class="accordion" id="resumeAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#enhancedResume">
+                                            Enhanced Resume Preview
+                                        </button>
+                                    </h2>
+                                    <div id="enhancedResume" class="accordion-collapse collapse show" data-bs-parent="#resumeAccordion">
+                                        <div class="accordion-body">
+                                            <div id="enhancedResumeContent" class="pre-scrollable">
+                                                <div class="resume-preview">
+                                                    <div class="resume-header">
+                                                        <h2 id="previewName" class="text-primary"></h2>
+                                                        <p id="previewTitle" class="text-secondary"></p>
+                                                        <div id="previewContact" class="contact-info"></div>
+                                                    </div>
+                                                    <div class="resume-section">
+                                                        <h3 class="section-title">Summary</h3>
+                                                        <div id="previewSummary" class="section-content"></div>
+                                                    </div>
+                                                    <div class="resume-section">
+                                                        <h3 class="section-title">Experience</h3>
+                                                        <div id="previewExperience" class="section-content"></div>
+                                                    </div>
+                                                    <div class="resume-section">
+                                                        <h3 class="section-title">Education</h3>
+                                                        <div id="previewEducation" class="section-content"></div>
+                                                    </div>
+                                                    <div class="resume-section">
+                                                        <h3 class="section-title">Skills</h3>
+                                                        <div id="previewSkills" class="section-content"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Design Customization</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="primaryColor" class="form-label">Primary Color</label>
+                                    <input type="color" class="form-control form-control-color" id="primaryColor" value="#2c3e50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="secondaryColor" class="form-label">Secondary Color</label>
+                                    <input type="color" class="form-control form-control-color" id="secondaryColor" value="#3498db">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fontSize" class="form-label">Font Size</label>
+                                    <input type="range" class="form-range" id="fontSize" min="10" max="14" value="12">
+                                    <small class="text-muted">Current size: <span id="fontSizeValue">12</span>pt</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lineSpacing" class="form-label">Line Spacing</label>
+                                    <input type="range" class="form-range" id="lineSpacing" min="12" max="18" value="14">
+                                    <small class="text-muted">Current spacing: <span id="lineSpacingValue">14</span>pt</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="includeSkillsChart" checked>
+                            <label class="form-check-label" for="includeSkillsChart">
+                                Include Skills Chart
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('resume');
+            const form = document.getElementById('uploadForm');
+            const results = document.getElementById('results');
+            const downloadReportBtn = document.getElementById('downloadReport');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const statusMessage = document.getElementById('statusMessage');
+            const fileInfo = document.getElementById('fileInfo');
+            const analyzeButton = document.getElementById('analyzeButton');
+            let currentAnalysis = null;
+            
+            const MAX_FILE_SIZE = 16 * 1024 * 1024; // 16MB in bytes
+            
+            function showStatus(message, type = 'info') {
+                statusMessage.textContent = message;
+                statusMessage.className = `status-message ${type}`;
+                statusMessage.style.display = 'block';
+            }
+            
+            function hideStatus() {
+                statusMessage.style.display = 'none';
+            }
+            
+            function showLoading(message) {
+                loadingMessage.textContent = message;
+                loadingOverlay.style.display = 'flex';
+            }
+            
+            function hideLoading() {
+                loadingOverlay.style.display = 'none';
+            }
+            
+            function updateFileInfo(file) {
+                if (file) {
+                    const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                    fileInfo.innerHTML = `
+                        <strong>Selected file:</strong> ${file.name}<br>
+                        <strong>Size:</strong> ${fileSize} MB
+                    `;
+                    
+                    if (file.size > MAX_FILE_SIZE) {
+                        showStatus('File size exceeds 16MB limit. Please choose a smaller file.', 'error');
+                        analyzeButton.disabled = true;
+                    } else {
+                        hideStatus();
+                        analyzeButton.disabled = false;
+                    }
+                } else {
+                    fileInfo.innerHTML = '';
+                }
+            }
+            
+            // Handle drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.classList.add('dragover');
+                }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.classList.remove('dragover');
+                }, false);
+            });
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                fileInput.files = files;
+                updateFileInfo(files[0]);
+            }
+            
+            dropArea.addEventListener('click', () => fileInput.click());
+            
+            fileInput.addEventListener('change', () => {
+                updateFileInfo(fileInput.files[0]);
+            });
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    showStatus('Please select a resume file', 'error');
+                    return;
+                }
+                
+                if (file.size > MAX_FILE_SIZE) {
+                    showStatus('File size exceeds 16MB limit. Please choose a smaller file.', 'error');
+                    return;
+                }
+                
+                if (!formData.get('job_description')) {
+                    showStatus('Please enter a job description', 'error');
+                    return;
+                }
+                
+                try {
+                    showLoading('Uploading and analyzing your resume...');
+                    const response = await fetch('/analyze', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'An error occurred while analyzing the resume');
+                    }
+                    
+                    const data = await response.json();
+                    currentAnalysis = data;
+                    displayResults(data);
+                    showStatus('Analysis completed successfully!', 'success');
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    showStatus(error.message || 'An error occurred while analyzing the resume', 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+            
+            function displayResults(data) {
+                console.log('Received analysis data:', data);
+                results.style.display = 'block';
+                
+                // Update match percentage
+                const matchPercentage = document.getElementById('matchPercentage');
+                const matchText = document.getElementById('matchText');
+                matchPercentage.style.width = `${data.match_percentage}%`;
+                matchPercentage.textContent = `${data.match_percentage}% Match`;
+                matchText.textContent = `Your resume matches ${data.match_percentage}% with the job description`;
+                
+                // Display keywords
+                const keywordsDiv = document.getElementById('keywords');
+                keywordsDiv.innerHTML = data.keywords.map(kw => 
+                    `<span class="badge bg-primary me-1 mb-1">${kw}</span>`
+                ).join('');
+                
+                // Display missing keywords
+                const missingKeywordsDiv = document.getElementById('missingKeywords');
+                missingKeywordsDiv.innerHTML = data.missing_keywords.map(kw => 
+                    `<span class="badge bg-danger me-1 mb-1">${kw}</span>`
+                ).join('');
+                
+                // Display ATS issues
+                const atsIssuesDiv = document.getElementById('atsIssues');
+                if (data.ats_issues && data.ats_issues.length > 0) {
+                    atsIssuesDiv.innerHTML = data.ats_issues.map(issue => `
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">${issue.message}</h6>
+                            <p class="mb-0">${issue.recommendation}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    atsIssuesDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Your resume is ATS-friendly!
+                        </div>
+                    `;
+                }
+                
+                // Display grammar suggestions
+                const grammarSuggestionsDiv = document.getElementById('grammarSuggestions');
+                if (data.grammar_suggestions && data.grammar_suggestions.length > 0) {
+                    grammarSuggestionsDiv.innerHTML = data.grammar_suggestions.map(suggestion => `
+                        <div class="grammar-suggestion">
+                            <p class="grammar-context">${suggestion.context}</p>
+                            <p>${suggestion.message}</p>
+                            ${suggestion.replacements && suggestion.replacements.length > 0 ? 
+                                `<p class="grammar-replacement">Suggested: ${suggestion.replacements.join(', ')}</p>` : 
+                                ''}
+                        </div>
+                    `).join('');
+                } else {
+                    grammarSuggestionsDiv.innerHTML = '<p class="text-muted">No grammar issues found!</p>';
+                }
+                
+                // Display suggestions
+                const suggestionsDiv = document.getElementById('suggestions');
+                suggestionsDiv.innerHTML = data.suggestions.map(suggestion => 
+                    `<div class="alert alert-info">${suggestion}</div>`
+                ).join('');
+                
+                // Parse the enhanced resume text into sections
+                const enhancedResume = data.enhanced_resume || '';
+                const sections = {
+                    name: '',
+                    title: '',
+                    email: '',
+                    phone: '',
+                    location: '',
+                    summary: '',
+                    experience: '',
+                    education: '',
+                    skills: ''
+                };
+                
+                // Split the resume into sections
+                const lines = enhancedResume.split('\n');
+                let currentSection = '';
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+                    
+                    // Check for section headers
+                    const upperLine = line.toUpperCase();
+                    if (upperLine === 'SUMMARY' || upperLine === 'PROFESSIONAL SUMMARY') {
+                        currentSection = 'summary';
+                    } else if (upperLine === 'EXPERIENCE' || upperLine === 'WORK EXPERIENCE') {
+                        currentSection = 'experience';
+                    } else if (upperLine === 'EDUCATION') {
+                        currentSection = 'education';
+                    } else if (upperLine === 'SKILLS' || upperLine === 'TECHNICAL SKILLS') {
+                        currentSection = 'skills';
+                    } else if (currentSection) {
+                        // Add content to current section
+                        if (sections[currentSection]) {
+                            sections[currentSection] += '\n' + line;
+                        } else {
+                            sections[currentSection] = line;
+                        }
+                    } else if (line.includes('@')) {
+                        sections.email = line;
+                    } else if (/^\d{10,}$/.test(line.replace(/[^0-9]/g, ''))) {
+                        sections.phone = line;
+                    } else if (line.split(' ').length <= 3) {
+                        if (!sections.name) {
+                            sections.name = line;
+                        } else if (!sections.title) {
+                            sections.title = line;
+                        }
+                    }
+                }
+                
+                // Store the parsed sections
+                currentAnalysis = {
+                    ...data,
+                    enhanced_resume: sections
+                };
+                
+                // Update preview
+                document.getElementById('previewName').textContent = sections.name || 'Your Name';
+                document.getElementById('previewTitle').textContent = sections.title || 'Professional Title';
+                
+                const contactInfo = [];
+                if (sections.email) contactInfo.push(`<span><i class="fas fa-envelope me-1"></i>${sections.email}</span>`);
+                if (sections.phone) contactInfo.push(`<span><i class="fas fa-phone me-1"></i>${sections.phone}</span>`);
+                if (sections.location) contactInfo.push(`<span><i class="fas fa-map-marker-alt me-1"></i>${sections.location}</span>`);
+                document.getElementById('previewContact').innerHTML = contactInfo.join('');
+                
+                document.getElementById('previewSummary').innerHTML = sections.summary.split('\n').map(line => `<p>${line}</p>`).join('');
+                document.getElementById('previewExperience').innerHTML = sections.experience.split('\n').map(line => `<p>${line}</p>`).join('');
+                document.getElementById('previewEducation').innerHTML = sections.education.split('\n').map(line => `<p>${line}</p>`).join('');
+                
+                const skills = sections.skills.split(',').map(skill => skill.trim());
+                document.getElementById('previewSkills').innerHTML = `
+                    <div class="skills-list">
+                        ${skills.map(skill => `<span class="skill-badge">${skill}</span>`).join('')}
+                    </div>
+                `;
+            }
+            
+            // Update font size display
+            document.getElementById('fontSize').addEventListener('input', function() {
+                document.getElementById('fontSizeValue').textContent = this.value;
+            });
+
+            // Update line spacing display
+            document.getElementById('lineSpacing').addEventListener('input', function() {
+                document.getElementById('lineSpacingValue').textContent = this.value;
+            });
+
+            // Function to get design options
+            function getDesignOptions() {
+                return {
+                    primary_color: document.getElementById('primaryColor').value,
+                    secondary_color: document.getElementById('secondaryColor').value,
+                    font_size: document.getElementById('fontSize').value,
+                    line_spacing: document.getElementById('lineSpacing').value,
+                    include_skills_chart: document.getElementById('includeSkillsChart').checked
+                };
+            }
+
+            // Update download enhanced resume function
+            function downloadEnhancedResume() {
+                if (!currentAnalysis || !currentAnalysis.enhanced_resume) {
+                    showStatus('Please analyze a resume first', 'error');
+                    return;
+                }
+
+                const resumeData = currentAnalysis.enhanced_resume;
+                console.log('Sending resume data:', resumeData);
+
+                const designOptions = getDesignOptions();
+                console.log('Sending design options:', designOptions);
+
+                fetch('/download_enhanced_resume', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        resume_data: resumeData,
+                        design_options: designOptions
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to download resume');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'enhanced_resume.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showStatus('Resume downloaded successfully!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error downloading resume:', error);
+                    showStatus('Error downloading resume: ' + error.message, 'error');
+                });
+            }
+            
+            // Add event listener for enhanced resume download
+            document.getElementById('downloadEnhancedResume').addEventListener('click', downloadEnhancedResume);
+            
+            // Add event listener for report download
+            document.getElementById('downloadReport').addEventListener('click', async function() {
+                if (!currentAnalysis) {
+                    showStatus('Please analyze a resume first', 'error');
+                    return;
+                }
+                
+                try {
+                    showLoading('Generating your report...');
+                    const response = await fetch('/download_report', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(currentAnalysis)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Error downloading report');
+                    }
+                    
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'resume_analysis_report.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showStatus('Report downloaded successfully!', 'success');
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    showStatus(error.message || 'Error downloading report', 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
