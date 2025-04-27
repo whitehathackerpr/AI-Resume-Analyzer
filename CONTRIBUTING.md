@@ -18,8 +18,8 @@ By participating in this project, you agree to abide by our Code of Conduct. Ple
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/AI-Resume-Analyzer.git
-cd AI-Resume-Analyzer
+git clone https://github.com/whitehathackerpr/AI-gResume-Analyzer.git
+cd AI-gResume-Analyzer
 ```
 
 2. Create a virtual environment:

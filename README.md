@@ -44,8 +44,8 @@ AI Resume Analyzer is a powerful web application that helps job seekers optimize
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/whitehathackerpr/AI-Resume-Analyzer.git
-cd AI-Resume-Analyzer
+git clone https://github.com/whitehathackerpr/AI-gResume-Analyzer.git
+cd AI-gResume-Analyzer
 ```
 
 2. Create a virtual environment:
@@ -168,5 +168,5 @@ For support, please:
 ---
 
 <div align="center">
-Made with ❤️ by [Your Name](https://github.com/your-username)
+Made with ❤️ by [WhiteHat Hacker](https://github.com/whitehathackerpr)
 </div> 
