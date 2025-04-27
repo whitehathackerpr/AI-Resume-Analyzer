@@ -162,7 +162,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support, please:
 - Open an issue in the GitHub repository
-- Email: [your-email@example.com](mailto:your-email@example.com)
+- Email: [your-email@example.com](mailto:info@4codex.com)
 - Join our [Discord community](https://discord.gg/your-server)
 
 ## 📈 Future Enhancements
