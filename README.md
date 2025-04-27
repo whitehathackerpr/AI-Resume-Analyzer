@@ -84,17 +84,10 @@ http://127.0.0.1:5000
 ## 📸 Screenshots
 
 <div align="center">
-  <h3>1. Upload Resume and Job Description</h3>
-  <img src="screenshots/11.png" alt="Upload Interface" width="800"/>
-  
-  <h3>2. Analysis Results</h3>
-  <img src="screenshots/22.png" alt="Analysis Results" width="800"/>
-  
-  <h3>3. Enhanced Resume Preview</h3>
-  <img src="screenshots/33.png" alt="Enhanced Resume Preview" width="800"/>
-  
-  <h3>4. Download Options</h3>
-  <img src="screenshots/44.png" alt="Download Options" width="800"/>
+  <img src="screenshots/11.png" alt="Upload Interface" width="200" style="margin: 10px;"/>
+  <img src="screenshots/22.png" alt="Analysis Results" width="200" style="margin: 10px;"/>
+  <img src="screenshots/33.png" alt="Enhanced Resume Preview" width="200" style="margin: 10px;"/>
+  <img src="screenshots/44.png" alt="Download Options" width="200" style="margin: 10px;"/>
 </div>
 
 ## 📋 Usage Guide
